@@ -1,0 +1,136 @@
+ <!DOCTYPE html>
+<html>
+<head>
+    <title>Stock Countdown</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+        }
+        
+        .timers {
+            flex: 1;
+        }
+        
+        .timer-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .timer-name {
+            font-weight: 600;
+            font-size: 18px;
+            width: 120px;
+        }
+        
+        .timer-display {
+            font-family: monospace;
+            font-size: 24px;
+            color: #2563eb;
+        }
+        
+        .stock {
+            color: #dc2626;
+        }
+        
+        .image-container {
+            width: 256px;
+        }
+        
+        .image-container img {
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="timers">
+        <div class="timer-card">
+            <div class="timer-name">Quick Break</div>
+            <div class="timer-display" id="timer1">05:00</div>
+        </div>
+        <div class="timer-card">
+            <div class="timer-name">Coffee Time</div>
+            <div class="timer-display" id="timer2">10:00</div>
+        </div>
+        <div class="timer-card">
+            <div class="timer-name">Lunch Break</div>
+            <div class="timer-display" id="timer3">30:00</div>
+        </div>
+        <div class="timer-card">
+            <div class="timer-name">Study Session</div>
+            <div class="timer-display" id="timer4">45:00</div>
+        </div>
+        <div class="timer-card">
+            <div class="timer-name">Long Break</div>
+            <div class="timer-display" id="timer5">60:00</div>
+        </div>
+    </div>
+    <div class="image-container">
+        <img src="/api/placeholder/256/384" alt="Timer illustration">
+    </div>
+
+    <script>
+        const TIMERS_CONFIG = [
+            { id: 'timer1', minutes: 5 },
+            { id: 'timer2', minutes: 10 },
+            { id: 'timer3', minutes: 30 },
+            { id: 'timer4', minutes: 45 },
+            { id: 'timer5', minutes: 60 }
+        ];
+
+        // Load or initialize timer states
+        let timerStates = JSON.parse(localStorage.getItem('timerStates')) || TIMERS_CONFIG.map(timer => ({
+            id: timer.id,
+            minutes: timer.minutes,
+            nextReset: Date.now() + (timer.minutes * 60 * 1000),
+            isStock: false
+        }));
+
+        function updateDisplay() {
+            const now = Date.now();
+            
+            timerStates = timerStates.map(timer => {
+                const element = document.getElementById(timer.id);
+                const timeLeft = Math.max(0, timer.nextReset - now);
+                
+                if (timeLeft === 0) {
+                    if (!timer.isStock) {
+                        // Set next reset time when entering STOCK state
+                        timer.nextReset = now + (timer.minutes * 60 * 1000);
+                        timer.isStock = true;
+                    }
+                    element.textContent = 'STOCK';
+                    element.classList.add('stock');
+                } else {
+                    timer.isStock = false;
+                    element.classList.remove('stock');
+                    const minutes = Math.floor(timeLeft / (1000 * 60));
+                    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                    element.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                }
+                
+                return timer;
+            });
+            
+            // Save states to localStorage
+            localStorage.setItem('timerStates', JSON.stringify(timerStates));
+        }
+
+        // Update every second
+        setInterval(updateDisplay, 1000);
+        updateDisplay(); // Initial update
+    </script>
+</body>
+</html>
