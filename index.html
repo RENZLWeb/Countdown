@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
     <title>Stock Countdown</title>
@@ -57,23 +57,23 @@
 <body>
     <div class="timers">
         <div class="timer-card">
-            <div class="timer-name">bloxfruit fruits stock</div>
-            <div class="timer-display" id="timer1">43:00</div>
+            <div class="timer-name">Bloxfruit Stock</div>
+            <div class="timer-display" id="timer1">30:00</div>
         </div>
         <div class="timer-card">
-            <div class="timer-name">10</div>
+            <div class="timer-name">10 Min</div>
             <div class="timer-display" id="timer2">10:00</div>
         </div>
         <div class="timer-card">
-            <div class="timer-name">30</div>
+            <div class="timer-name">30 Min</div>
             <div class="timer-display" id="timer3">30:00</div>
         </div>
         <div class="timer-card">
-            <div class="timer-name">45</div>
+            <div class="timer-name">45 Min</div>
             <div class="timer-display" id="timer4">45:00</div>
         </div>
         <div class="timer-card">
-            <div class="timer-name">60</div>
+            <div class="timer-name">60 Min</div>
             <div class="timer-display" id="timer5">60:00</div>
         </div>
     </div>
@@ -83,33 +83,31 @@
 
     <script>
         const TIMERS_CONFIG = [
-            { id: 'timer1', minutes: 46 },
+            { id: 'timer1', minutes: 30 },  // Changed from 37 to 30
             { id: 'timer2', minutes: 10 },
             { id: 'timer3', minutes: 30 },
             { id: 'timer4', minutes: 45 },
             { id: 'timer5', minutes: 60 }
         ];
 
-        // Load or initialize timer states
         let timerStates = JSON.parse(localStorage.getItem('timerStates')) || TIMERS_CONFIG.map(timer => ({
             id: timer.id,
-            minutes: timer.minutes,
+            duration: timer.minutes * 60 * 1000,
             nextReset: Date.now() + (timer.minutes * 60 * 1000),
             isStock: false
         }));
 
         function updateDisplay() {
             const now = Date.now();
-            
-            timerStates = timerStates.map(timer => {
+
+            timerStates.forEach(timer => {
                 const element = document.getElementById(timer.id);
                 const timeLeft = Math.max(0, timer.nextReset - now);
-                
-                if (timeLeft === 0) {
+
+                if (timeLeft <= 0) {
                     if (!timer.isStock) {
-                        // Set next reset time when entering STOCK state
-                        timer.nextReset = now + (timer.minutes * 60 * 1000);
                         timer.isStock = true;
+                        timer.nextReset = now + timer.duration;
                     }
                     element.textContent = 'STOCK';
                     element.classList.add('stock');
@@ -120,17 +118,13 @@
                     const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
                     element.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
                 }
-                
-                return timer;
             });
-            
-            // Save states to localStorage
+
             localStorage.setItem('timerStates', JSON.stringify(timerStates));
         }
 
-        // Update every second
         setInterval(updateDisplay, 1000);
-        updateDisplay(); // Initial update
+        updateDisplay();
     </script>
 </body>
 </html>
